@@ -384,7 +384,7 @@ body {
 }
 
 #periodHistory {
-    max-height: 200px;
+    max-height: 300px;
     overflow-y: auto;
 }
 
@@ -400,13 +400,38 @@ body {
     border-bottom: none;
 }
 
+.period-item .period-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
 .period-item .date {
     font-weight: 500;
+    font-size: 15px;
 }
 
 .period-item .info {
     color: #999;
-    font-size: 13px;
+    font-size: 12px;
+}
+
+.btn-delete-record {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 44px;
+    min-height: 36px;
+}
+
+.btn-delete-record:active {
+    transform: scale(0.9);
+    background: #e05555;
 }
 
 /* ===== 弹窗 ===== */
