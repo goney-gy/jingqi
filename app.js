@@ -1,5 +1,5 @@
 // ===== API配置 =====
-const API_URL = 'https://your-backend-url.com/api'; // 替换为你的后端地址
+const API_URL = 'http://localhost:8000/api; // 替换为你的后端地址
 
 // ===== 状态管理 =====
 let state = {
