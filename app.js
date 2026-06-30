@@ -1,8 +1,18 @@
 // ===== API配置 =====
-// 根据环境自动选择API地址
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '10.10.21.141'
-    ? 'http://localhost:8000/api'
-    : 'https://10.10.21.141：8000/api';  // 部署后改为实际地址
+// 根据访问地址自动选择API地址
+const API_URL = (() => {
+    const hostname = window.location.hostname;
+    
+    // 本地开发环境（通过 localhost 或 IP 访问）
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '10.10.21.141') {
+        return 'http://10.10.21.141:8000/api';  // 或 'http://localhost:8000/api'
+    }
+    
+    // 生产环境（GitHub Pages）
+    // 注意：这里不能使用 10.10.21.141，因为手机无法访问您的电脑IP时，会使用这个地址
+    // 所以生产环境要么用 ngrok，要么部署到云服务器
+    return 'https://your-backend-domain.com/api';  // 需要改为实际公网地址
+})();
 
 // 或者直接指定
 // const API_URL = 'http://localhost:8000/api';
