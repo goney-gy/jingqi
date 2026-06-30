@@ -2,7 +2,7 @@
 // 根据环境自动选择API地址
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '10.10.21.141'
     ? 'http://localhost:8000/api'
-    : 'https://10.10.21.141/api';  // 部署后改为实际地址
+    : 'https://10.10.21.141：8000/api';  // 部署后改为实际地址
 
 // 或者直接指定
 // const API_URL = 'http://localhost:8000/api';
