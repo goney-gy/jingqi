@@ -1,8 +1,6 @@
 // ===== API配置 =====
-// 使用您的电脑IP地址（手机和电脑需在同一WiFi）
 const API_URL = 'http://10.10.21.141:8000/api';
 
-// 打印API地址，方便调试
 console.log('📡 API地址:', API_URL);
 
 // ===== 日期工具函数 =====
@@ -109,11 +107,9 @@ function logout() {
 // ===== 数据加载 =====
 async function loadData() {
     try {
-        // 加载经期记录
         const periods = await apiCall('/get_periods', 'GET', null, true);
         state.periods = periods;
         
-        // 加载每日备注
         const notes = await apiCall('/get_notes', 'GET', null, true);
         state.dailyNotes = {};
         if (Array.isArray(notes)) {
@@ -124,10 +120,7 @@ async function loadData() {
             state.dailyNotes = notes;
         }
         
-        // 更新统计
         updateStats();
-        
-        // 更新历史记录
         renderHistory();
         
         return true;
@@ -147,10 +140,8 @@ async function renderCalendar() {
     const today = new Date();
     const todayStr = formatDate(today.getFullYear(), today.getMonth(), today.getDate());
     
-    // 更新标题
     $('currentMonthYear').textContent = `${year}年${month + 1}月`;
     
-    // 获取经期日期集合
     const periodDates = new Set();
     state.periods.forEach(record => {
         const start = new Date(record.start_date);
@@ -165,7 +156,6 @@ async function renderCalendar() {
         }
     });
     
-    // 获取预测日期
     let predictedDates = new Set();
     try {
         const prediction = await apiCall('/get_cycle_prediction', 'GET', null, true);
@@ -180,7 +170,6 @@ async function renderCalendar() {
         console.log('获取预测失败:', error);
     }
     
-    // 构建日历
     let html = '';
     const totalDays = firstDay + daysInMonth;
     const totalSlots = Math.ceil(totalDays / 7) * 7;
@@ -217,7 +206,6 @@ async function renderCalendar() {
     
     $('calendarGrid').innerHTML = html;
     
-    // 添加点击事件
     document.querySelectorAll('.calendar-day:not(.other-month)').forEach(el => {
         el.addEventListener('click', () => {
             const date = el.dataset.date;
@@ -233,7 +221,6 @@ function showDayNote(dateStr) {
     const note = state.dailyNotes[dateStr] || {};
     $('dailyNote').value = note.note || '';
     
-    // 更新经期标记按钮
     const markBtn = $('markPeriod');
     if (note.has_period) {
         markBtn.classList.add('active');
@@ -243,7 +230,6 @@ function showDayNote(dateStr) {
         markBtn.textContent = '💖 标记经期';
     }
     
-    // 修复：直接显示正确的日期
     const parts = dateStr.split('-');
     const dateDisplay = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
     $('noteStatus').textContent = `📅 ${dateDisplay}`;
@@ -255,7 +241,6 @@ async function saveDailyNote() {
     const noteText = $('dailyNote').value.trim();
     const hasPeriod = $('markPeriod').classList.contains('active');
     
-    // 如果备注为空且没有经期标记，询问是否删除
     if (!noteText && !hasPeriod) {
         const existingNote = state.dailyNotes[date];
         if (existingNote && existingNote.note) {
@@ -295,7 +280,6 @@ async function saveDailyNote() {
             flow_level: flowLevel ? parseInt(flowLevel) : null
         }, true);
         
-        // 更新本地状态
         if (!state.dailyNotes[date]) {
             state.dailyNotes[date] = {};
         }
@@ -324,7 +308,6 @@ async function markPeriod() {
     const isActive = markBtn.classList.contains('active');
     
     if (!isActive) {
-        // 标记经期开始
         const modal = $('modal');
         const dateDisplay = displayDate(date);
         $('modalMessage').textContent = `🌸 是否将 ${dateDisplay} 标记为经期开始日？`;
@@ -353,11 +336,13 @@ async function markPeriod() {
             modal.classList.remove('show');
         };
     } else {
-        // 取消标记经期
         const dateDisplay = displayDate(date);
         if (confirm(`确定要取消 ${dateDisplay} 的经期标记吗？`)) {
             try {
+                console.log(`正在删除经期记录: ${date}`);
+                
                 await apiCall(`/delete_period/${date}`, 'DELETE', null, true);
+                
                 await loadData();
                 renderCalendar();
                 updateStats();
@@ -380,6 +365,7 @@ async function markPeriod() {
                 $('noteStatus').textContent = '✅ 经期标记已取消！';
                 setTimeout(() => $('noteStatus').textContent = '', 2000);
             } catch (error) {
+                console.error('取消标记失败:', error);
                 alert('取消标记失败: ' + error.message);
             }
         }
@@ -402,7 +388,6 @@ function updateStats() {
     $('cycleLength').textContent = cycleLength;
     $('periodLength').textContent = periodLength;
     
-    // 计算下次经期
     const lastStart = new Date(last.start_date);
     const nextStart = new Date(lastStart);
     nextStart.setDate(nextStart.getDate() + cycleLength);
@@ -438,7 +423,6 @@ function showPage(page) {
 }
 
 // ===== 事件绑定 =====
-// 登录
 $('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = $('loginUsername').value.trim();
@@ -446,7 +430,6 @@ $('loginForm').addEventListener('submit', async (e) => {
     await login(username, password);
 });
 
-// 注册
 $('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = $('registerUsername').value.trim();
@@ -465,7 +448,6 @@ $('registerForm').addEventListener('submit', async (e) => {
     await register(username, password, email);
 });
 
-// 切换登录/注册
 $('showRegister').addEventListener('click', (e) => {
     e.preventDefault();
     showPage('register');
@@ -476,10 +458,8 @@ $('showLogin').addEventListener('click', (e) => {
     showPage('login');
 });
 
-// 退出
 $('logoutBtn').addEventListener('click', logout);
 
-// 日历导航
 $('prevMonth').addEventListener('click', () => {
     state.currentMonth--;
     if (state.currentMonth < 0) {
@@ -498,13 +478,9 @@ $('nextMonth').addEventListener('click', () => {
     renderCalendar();
 });
 
-// 保存备注
 $('saveNote').addEventListener('click', saveDailyNote);
-
-// 标记经期
 $('markPeriod').addEventListener('click', markPeriod);
 
-// 删除备注
 $('deleteNote').addEventListener('click', async () => {
     const date = formatDateFromDate(state.selectedDate);
     const existingNote = state.dailyNotes[date];
