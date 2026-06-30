@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🌸 经期追踪</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="loginPage" class="page active">
+        <div class="login-container">
+            <div class="logo">🌸</div>
+            <h1>经期追踪</h1>
+            <p class="subtitle">关爱自己，从记录开始</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="text" id="loginUsername" placeholder="用户名" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="密码" required>
+                </div>
+                <button type="submit" class="btn-primary">登录</button>
+            </form>
+            <p class="toggle-auth">
+                还没有账号？<a href="#" id="showRegister">立即注册</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- 注册页面 -->
+    <div id="registerPage" class="page">
+        <div class="login-container">
+            <div class="logo">🌸</div>
+            <h1>创建账号</h1>
+            <form id="registerForm">
+                <div class="form-group">
+                    <input type="text" id="registerUsername" placeholder="用户名" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="registerEmail" placeholder="邮箱（可选）">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="registerPassword" placeholder="密码" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="registerConfirmPassword" placeholder="确认密码" required>
+                </div>
+                <button type="submit" class="btn-primary">注册</button>
+            </form>
+            <p class="toggle-auth">
+                已有账号？<a href="#" id="showLogin">返回登录</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- 主应用页面 -->
+    <div id="appPage" class="page">
+        <div class="app-header">
+            <h2>🌸 经期追踪</h2>
+            <button id="logoutBtn" class="btn-logout">退出</button>
+        </div>
+        
+        <!-- 统计概览 -->
+        <div class="stats-container">
+            <div class="stat-item">
+                <span class="stat-label">周期</span>
+                <span class="stat-value" id="cycleLength">--</span>
+                <span class="stat-unit">天</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">经期</span>
+                <span class="stat-value" id="periodLength">--</span>
+                <span class="stat-unit">天</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">下次预计</span>
+                <span class="stat-value" id="nextPeriod">--</span>
+            </div>
+        </div>
+
+        <!-- 日历 -->
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button id="prevMonth" class="nav-btn">‹</button>
+                <span id="currentMonthYear" class="month-year"></span>
+                <button id="nextMonth" class="nav-btn">›</button>
+            </div>
+            <div class="calendar-weekdays">
+                <span>日</span><span>一</span><span>二</span>
+                <span>三</span><span>四</span><span>五</span><span>六</span>
+            </div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+
+        <!-- 今日备注 -->
+        <div class="note-container">
+            <h3>📝 今日备注</h3>
+            <div class="note-input-group">
+                <textarea id="dailyNote" placeholder="记录今日状态（症状、情绪等）..." rows="3"></textarea>
+                <div class="note-actions">
+                    <button id="markPeriod" class="btn-period">💖 标记经期</button>
+                    <button id="saveNote" class="btn-save">保存</button>
+                </div>
+            </div>
+            <div id="noteStatus" class="note-status"></div>
+        </div>
+
+        <!-- 经期记录列表 -->
+        <div class="history-container">
+            <h3>📊 经期记录</h3>
+            <div id="periodHistory"></div>
+        </div>
+    </div>
+
+    <!-- 提示弹窗 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <p id="modalMessage"></p>
+            <div class="modal-actions">
+                <button id="modalCancel" class="btn-cancel">取消</button>
+                <button id="modalConfirm" class="btn-primary">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
