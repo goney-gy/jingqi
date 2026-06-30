@@ -172,13 +172,14 @@
         }
 
         /* ===== 日历 ===== */
-        .calendar-container {
-            background: white;
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-        }
+        .calendar-day.period-day {
+           background-image: url('hellokitty标记.jpeg');
+           background-size: cover;
+           background-position: center;
+           color: #6b1a3a;
+           font-weight: 700;
+           border: 2px solid #ff4d6d;
+       }
 
         .calendar-header {
             display: flex;
@@ -533,9 +534,11 @@
     <!-- ============================================================ -->
     <div id="loginPage" class="page active">
         <div class="login-container">
-            <div class="logo">🌸</div>
-            <h1>经期追踪</h1>
-            <p class="subtitle">关爱自己，从记录开始</p>
+           <div class="logo">
+    <img src="hellokitty.jpg" alt="Hello Kitty" style="width:80px;height:80px;border-radius:50%;">
+</div>
+<h1>🎀 经期追踪</h1>
+            <p class="subtitle">咩咩咩，宝宝肚肚打雷了</p>
             <form id="loginForm">
                 <div class="form-group">
                     <input type="text" id="loginUsername" placeholder="用户名" required>
@@ -556,7 +559,9 @@
     <!-- ============================================================ -->
     <div id="registerPage" class="page">
         <div class="login-container">
-            <div class="logo">🌸</div>
+            <div class="logo">
+    <img src="hellokitty.jpg" alt="Hello Kitty" style="width:80px;height:80px;border-radius:50%;">
+</div>
             <h1>创建账号</h1>
             <form id="registerForm">
                 <div class="form-group">
@@ -584,7 +589,7 @@
     <!-- ============================================================ -->
     <div id="appPage" class="page">
         <div class="app-header">
-            <h2>🌸 经期追踪</h2>
+            <h2>经期追踪</h2>
             <button id="logoutBtn" class="btn-logout">退出</button>
         </div>
         
@@ -619,7 +624,7 @@
             </div>
             <div id="calendarGrid" class="calendar-grid"></div>
         </div>
-
+ 
         <!-- 今日备注 -->
         <div class="note-container">
             <h3>📝 今日备注</h3>
