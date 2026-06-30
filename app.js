@@ -1,22 +1,24 @@
 // ===== API配置 =====
-// 根据访问地址自动选择API地址
-const API_URL = (() => {
-    const hostname = window.location.hostname;
-    console.log('当前访问地址:', hostname);  // 方便调试
-    
-    // 本地开发环境（通过 localhost 或 IP 访问）
-    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '10.10.21.141') {
-        return 'http://10.10.21.141:8000/api';
-    }
-    
-    // GitHub Pages 部署 - 使用您的电脑IP（手机需在同一WiFi）
-    if (hostname === 'goney-gy.github.io') {
-        return 'http://10.10.21.141:8000/api';  // ✅ 改为您的IP
-    }
-    
-    // 默认
-    return 'http://10.10.21.141:8000/api';
-})();
+// 使用您的电脑IP地址（手机和电脑需在同一WiFi）
+const API_URL = 'http://10.10.21.141:8000/api';
+
+// 打印API地址，方便调试
+console.log('📡 API地址:', API_URL);
+
+// ===== 日期工具函数 =====
+function formatDate(year, month, day) {
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function formatDateFromDate(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function displayDate(dateStr) {
+    const parts = dateStr.split('-');
+    return `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+}
+
 // ===== 状态管理 =====
 let state = {
     currentDate: new Date(),
@@ -114,9 +116,13 @@ async function loadData() {
         // 加载每日备注
         const notes = await apiCall('/get_notes', 'GET', null, true);
         state.dailyNotes = {};
-        notes.forEach(note => {
-            state.dailyNotes[note.date] = note;
-        });
+        if (Array.isArray(notes)) {
+            notes.forEach(note => {
+                state.dailyNotes[note.date] = note;
+            });
+        } else if (typeof notes === 'object') {
+            state.dailyNotes = notes;
+        }
         
         // 更新统计
         updateStats();
@@ -132,14 +138,14 @@ async function loadData() {
 }
 
 // ===== 渲染日历 =====
-function renderCalendar() {
+async function renderCalendar() {
     const year = state.currentYear;
     const month = state.currentMonth;
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const daysInPrevMonth = new Date(year, month, 0).getDate();
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = formatDate(today.getFullYear(), today.getMonth(), today.getDate());
     
     // 更新标题
     $('currentMonthYear').textContent = `${year}年${month + 1}月`;
@@ -152,12 +158,27 @@ function renderCalendar() {
         for (let i = 0; i < duration; i++) {
             const d = new Date(start);
             d.setDate(d.getDate() + i);
-            const key = d.toISOString().split('T')[0];
+            const key = formatDate(d.getFullYear(), d.getMonth(), d.getDate());
             if (key.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)) {
                 periodDates.add(key);
             }
         }
     });
+    
+    // 获取预测日期
+    let predictedDates = new Set();
+    try {
+        const prediction = await apiCall('/get_cycle_prediction', 'GET', null, true);
+        if (prediction && prediction.has_data && prediction.next_start) {
+            const nextStart = new Date(prediction.next_start);
+            const nextStartStr = formatDate(nextStart.getFullYear(), nextStart.getMonth(), nextStart.getDate());
+            if (nextStartStr.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)) {
+                predictedDates.add(nextStartStr);
+            }
+        }
+    } catch (error) {
+        console.log('获取预测失败:', error);
+    }
     
     // 构建日历
     let html = '';
@@ -169,28 +190,27 @@ function renderCalendar() {
         let isOtherMonth = false;
         
         if (i < firstDay) {
-            // 上月
             day = daysInPrevMonth - firstDay + i + 1;
             isOtherMonth = true;
         } else if (i >= firstDay + daysInMonth) {
-            // 下月
             day = i - firstDay - daysInMonth + 1;
             isOtherMonth = true;
         } else {
             day = i - firstDay + 1;
         }
         
-        const dateObj = new Date(year, month, day);
-        const dateStr = dateObj.toISOString().split('T')[0];
+        const dateStr = formatDate(year, month, day);
         const isToday = dateStr === todayStr;
         const isPeriod = periodDates.has(dateStr);
+        const isPredicted = predictedDates.has(dateStr);
         const hasNote = state.dailyNotes[dateStr];
         
         let classes = 'calendar-day';
         if (isOtherMonth) classes += ' other-month';
         if (isToday) classes += ' today';
         if (isPeriod) classes += ' period-day';
-        if (hasNote) classes += ' has-note';
+        if (isPredicted) classes += ' predicted-day';
+        if (hasNote && hasNote.note) classes += ' has-note';
         
         html += `<div class="${classes}" data-date="${dateStr}">${day}</div>`;
     }
@@ -201,7 +221,8 @@ function renderCalendar() {
     document.querySelectorAll('.calendar-day:not(.other-month)').forEach(el => {
         el.addEventListener('click', () => {
             const date = el.dataset.date;
-            state.selectedDate = new Date(date);
+            const parts = date.split('-');
+            state.selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
             showDayNote(date);
         });
     });
@@ -222,32 +243,66 @@ function showDayNote(dateStr) {
         markBtn.textContent = '💖 标记经期';
     }
     
-    // 显示日期信息
-    const date = new Date(dateStr);
-    const dateDisplay = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
+    // 修复：直接显示正确的日期
+    const parts = dateStr.split('-');
+    const dateDisplay = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
     $('noteStatus').textContent = `📅 ${dateDisplay}`;
 }
 
 // ===== 保存备注 =====
 async function saveDailyNote() {
-    const date = state.selectedDate.toISOString().split('T')[0];
-    const note = $('dailyNote').value.trim();
+    const date = formatDateFromDate(state.selectedDate);
+    const noteText = $('dailyNote').value.trim();
     const hasPeriod = $('markPeriod').classList.contains('active');
     
+    // 如果备注为空且没有经期标记，询问是否删除
+    if (!noteText && !hasPeriod) {
+        const existingNote = state.dailyNotes[date];
+        if (existingNote && existingNote.note) {
+            if (confirm('确定要删除今天的备注吗？')) {
+                try {
+                    await apiCall('/daily_note', 'POST', {
+                        date: date,
+                        note: '',
+                        has_period: false,
+                        symptoms: '',
+                        flow_level: null
+                    }, true);
+                    
+                    delete state.dailyNotes[date];
+                    renderCalendar();
+                    $('noteStatus').textContent = '🗑️ 备注已删除！';
+                    setTimeout(() => $('noteStatus').textContent = '', 2000);
+                    return;
+                } catch (error) {
+                    alert('删除失败: ' + error.message);
+                    return;
+                }
+            }
+        }
+        return;
+    }
+    
     try {
+        const symptoms = prompt('请输入症状（可选，用逗号分隔）：', '');
+        const flowLevel = prompt('请输入流量等级（1-5）：', '3');
+        
         await apiCall('/daily_note', 'POST', {
-            user_id: state.userId,
             date: date,
-            note: note,
-            has_period: hasPeriod
+            note: noteText,
+            has_period: hasPeriod,
+            symptoms: symptoms || '',
+            flow_level: flowLevel ? parseInt(flowLevel) : null
         }, true);
         
         // 更新本地状态
         if (!state.dailyNotes[date]) {
             state.dailyNotes[date] = {};
         }
-        state.dailyNotes[date].note = note;
+        state.dailyNotes[date].note = noteText;
         state.dailyNotes[date].has_period = hasPeriod;
+        state.dailyNotes[date].symptoms = symptoms || '';
+        state.dailyNotes[date].flow_level = flowLevel ? parseInt(flowLevel) : null;
         
         $('noteStatus').textContent = '✅ 保存成功！';
         renderCalendar();
@@ -264,14 +319,14 @@ async function saveDailyNote() {
 
 // ===== 标记经期 =====
 async function markPeriod() {
-    const date = state.selectedDate.toISOString().split('T')[0];
+    const date = formatDateFromDate(state.selectedDate);
     const markBtn = $('markPeriod');
     const isActive = markBtn.classList.contains('active');
     
     if (!isActive) {
         // 标记经期开始
         const modal = $('modal');
-        const dateDisplay = new Date(date).toLocaleDateString('zh-CN');
+        const dateDisplay = displayDate(date);
         $('modalMessage').textContent = `🌸 是否将 ${dateDisplay} 标记为经期开始日？`;
         modal.classList.add('show');
         
@@ -279,15 +334,14 @@ async function markPeriod() {
             modal.classList.remove('show');
             try {
                 await apiCall('/record_period', 'POST', {
-                    user_id: state.userId,
                     start_date: date,
                     cycle_length: 28,
                     period_length: 5
                 }, true);
                 
-                // 重新加载数据
                 await loadData();
                 renderCalendar();
+                updateStats();
                 $('noteStatus').textContent = '✅ 经期标记成功！';
                 setTimeout(() => $('noteStatus').textContent = '', 2000);
             } catch (error) {
@@ -299,8 +353,36 @@ async function markPeriod() {
             modal.classList.remove('show');
         };
     } else {
-        // 取消标记（这里简单处理，实际应用中可添加删除功能）
-        alert('取消标记功能暂未实现');
+        // 取消标记经期
+        const dateDisplay = displayDate(date);
+        if (confirm(`确定要取消 ${dateDisplay} 的经期标记吗？`)) {
+            try {
+                await apiCall(`/delete_period/${date}`, 'DELETE', null, true);
+                await loadData();
+                renderCalendar();
+                updateStats();
+                
+                markBtn.classList.remove('active');
+                markBtn.textContent = '💖 标记经期';
+                
+                const note = state.dailyNotes[date] || {};
+                if (note.has_period) {
+                    note.has_period = false;
+                    await apiCall('/daily_note', 'POST', {
+                        date: date,
+                        note: note.note || '',
+                        has_period: false,
+                        symptoms: note.symptoms || '',
+                        flow_level: note.flow_level || null
+                    }, true);
+                }
+                
+                $('noteStatus').textContent = '✅ 经期标记已取消！';
+                setTimeout(() => $('noteStatus').textContent = '', 2000);
+            } catch (error) {
+                alert('取消标记失败: ' + error.message);
+            }
+        }
     }
 }
 
@@ -424,7 +506,6 @@ $('markPeriod').addEventListener('click', markPeriod);
 
 // ===== 初始化 =====
 async function init() {
-    // 检查是否有保存的token
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     
