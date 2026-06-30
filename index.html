@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🌸 经期追踪</title>
+    <title>🎀 经期追踪</title>
     <style>
         /* ===== 全局样式 ===== */
         * {
@@ -37,46 +37,89 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ===== 登录/注册 ===== */
+        /* ============================================================ */
+        /* 登录/注册页面 - Hello Kitty 背景 */
+        /* ============================================================ */
         .login-container {
             text-align: center;
             padding: 40px 20px;
-            margin-top: 40px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        /* Hello Kitty 背景图片 - 无圆形，整体大，边缘柔和 */
+        .login-container .kitty-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('hellokitty.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 24px;
+            opacity: 0.85;
+            z-index: 0;
+        }
+
+        /* 柔和遮罩，让文字更清晰 */
+        .login-container .kitty-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
         }
 
         .login-container .logo {
             font-size: 64px;
             margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
         }
 
         .login-container h1 {
             font-size: 28px;
             color: #d63384;
             margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
         }
 
         .login-container .subtitle {
-            color: #999;
+            color: #6b1a3a;
             margin-bottom: 32px;
+            position: relative;
+            z-index: 1;
+            font-weight: 500;
+            text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
         }
 
         .form-group {
             margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
         }
 
         .form-group input {
             width: 100%;
             padding: 14px 16px;
-            border: 2px solid #f0d0d8;
+            border: 2px solid rgba(255, 255, 255, 0.6);
             border-radius: 12px;
             font-size: 16px;
-            background: white;
-            transition: border-color 0.3s;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: #ff69b4;
+            box-shadow: 0 0 0 4px rgba(255, 105, 180, 0.2);
         }
 
         .btn-primary {
@@ -90,6 +133,8 @@
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            z-index: 1;
         }
 
         .btn-primary:active {
@@ -103,7 +148,11 @@
 
         .toggle-auth {
             margin-top: 20px;
-            color: #999;
+            color: #6b1a3a;
+            position: relative;
+            z-index: 1;
+            font-weight: 500;
+            text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
         }
 
         .toggle-auth a {
@@ -141,11 +190,12 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
-            background: white;
+            background: rgba(255, 255, 255, 0.9);
             padding: 16px;
             border-radius: 16px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.08);
             margin-bottom: 20px;
+            backdrop-filter: blur(4px);
         }
 
         .stat-item {
@@ -172,14 +222,14 @@
         }
 
         /* ===== 日历 ===== */
-        .calendar-day.period-day {
-           background-image: url('hellokitty标记.jpeg');
-           background-size: cover;
-           background-position: center;
-           color: #6b1a3a;
-           font-weight: 700;
-           border: 2px solid #ff4d6d;
-       }
+        .calendar-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            backdrop-filter: blur(4px);
+        }
 
         .calendar-header {
             display: flex;
@@ -224,6 +274,7 @@
             gap: 4px;
         }
 
+        /* ===== 日历日期 - 通用样式 ===== */
         .calendar-day {
             aspect-ratio: 1;
             display: flex;
@@ -235,6 +286,10 @@
             transition: all 0.2s;
             position: relative;
             user-select: none;
+            background: transparent;
+            color: #333;
+            font-weight: 500;
+            border: 2px solid transparent;
         }
 
         .calendar-day:active {
@@ -246,24 +301,66 @@
         }
 
         .calendar-day.today {
-            border: 2px solid #ff69b4;
+            border-color: #ff69b4;
             font-weight: 700;
         }
 
+        /* ============================================================ */
+        /* 经期标记 - 使用 hellokitty标记.jpeg 作为背景 */
+        /* ============================================================ */
         .calendar-day.period-day {
-            background: #ffb3c6;
-            color: #d63384;
+            background-image: url('hellokitty标记.jpeg');
+            background-size: cover;
+            background-position: center;
+            color: #6b1a3a;
+            font-weight: 700;
+            border: 2px solid #ff4d6d;
+            text-shadow: 0 1px 4px rgba(255, 255, 255, 0.8);
+            position: relative;
+        }
+
+        /* 日期数字在图片上层 */
+        .calendar-day.period-day .day-number {
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 2px 6px;
+            border-radius: 50%;
+            font-weight: 700;
+            color: #4a1a2a;
+        }
+
+        /* 经期标记 + 今日 */
+        .calendar-day.period-day.today {
+            border-color: #d63384;
+            box-shadow: 0 0 0 2px #ff69b4, 0 0 0 4px #ff4d6d;
+        }
+
+        /* 经期标记 + 有备注 */
+        .calendar-day.period-day.has-note::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ff69b4;
+            z-index: 3;
+        }
+
+        /* ===== 预测日期 ===== */
+        .calendar-day.predicted-day {
+            border: 2px solid #4CAF50;
+            color: #2E7D32;
             font-weight: 600;
         }
 
-        .calendar-day.period-day.today {
-            border-color: #d63384;
+        .calendar-day.predicted-day.period-day {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px #4CAF50, 0 0 0 4px rgba(255, 77, 109, 0.3);
         }
 
-        .calendar-day.period-day:hover {
-            background: #ff8fab;
-        }
-
+        /* ===== 有备注标记 ===== */
         .calendar-day.has-note::after {
             content: '';
             position: absolute;
@@ -274,29 +371,14 @@
             background: #ff69b4;
         }
 
-        .calendar-day.predicted-day {
-            border: 2px solid #4CAF50;
-            color: #2E7D32;
-            font-weight: 600;
-        }
-
-        .calendar-day.predicted-day.period-day {
-            border-color: #4CAF50;
-            background: linear-gradient(135deg, #ffb3c6 50%, #a5d6a7 50%);
-        }
-
-        .calendar-day.predicted-day.today {
-            border-color: #4CAF50;
-            box-shadow: 0 0 0 2px #ff69b4, 0 0 0 4px #4CAF50;
-        }
-
-        /* ===== 备注 ===== */
+        /* ===== 备注区域 ===== */
         .note-container {
-            background: white;
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 16px;
             padding: 16px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.08);
             margin-bottom: 20px;
+            backdrop-filter: blur(4px);
         }
 
         .note-container h3 {
@@ -315,6 +397,7 @@
             resize: vertical;
             min-height: 80px;
             transition: border-color 0.3s;
+            background: rgba(255, 255, 255, 0.8);
         }
 
         .note-input-group textarea:focus {
@@ -380,10 +463,11 @@
 
         /* ===== 历史记录 ===== */
         .history-container {
-            background: white;
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 16px;
             padding: 16px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            backdrop-filter: blur(4px);
         }
 
         .history-container h3 {
@@ -524,6 +608,10 @@
             .calendar-day {
                 font-size: 12px;
             }
+
+            .login-container {
+                padding: 30px 16px;
+            }
         }
     </style>
 </head>
@@ -534,11 +622,12 @@
     <!-- ============================================================ -->
     <div id="loginPage" class="page active">
         <div class="login-container">
-           <div class="logo">
-    <img src="hellokitty.jpg" alt="Hello Kitty" style="width:80px;height:80px;border-radius:50%;">
-</div>
-<h1>🎀 经期追踪</h1>
-            <p class="subtitle">咩咩咩，宝宝肚肚打雷了</p>
+            <!-- Hello Kitty 背景图片 -->
+            <div class="kitty-bg"></div>
+            
+            <div class="logo">🎀</div>
+            <h1>经期追踪</h1>
+            <p class="subtitle">关爱自己，咩咩咩</p>
             <form id="loginForm">
                 <div class="form-group">
                     <input type="text" id="loginUsername" placeholder="用户名" required>
@@ -559,9 +648,9 @@
     <!-- ============================================================ -->
     <div id="registerPage" class="page">
         <div class="login-container">
-            <div class="logo">
-    <img src="hellokitty.jpg" alt="Hello Kitty" style="width:80px;height:80px;border-radius:50%;">
-</div>
+            <div class="kitty-bg"></div>
+            
+            <div class="logo">🎀</div>
             <h1>创建账号</h1>
             <form id="registerForm">
                 <div class="form-group">
@@ -589,7 +678,7 @@
     <!-- ============================================================ -->
     <div id="appPage" class="page">
         <div class="app-header">
-            <h2>经期追踪</h2>
+            <h2>🎀 经期追踪</h2>
             <button id="logoutBtn" class="btn-logout">退出</button>
         </div>
         
@@ -624,7 +713,7 @@
             </div>
             <div id="calendarGrid" class="calendar-grid"></div>
         </div>
- 
+
         <!-- 今日备注 -->
         <div class="note-container">
             <h3>📝 今日备注</h3>
@@ -670,7 +759,7 @@
     <!-- ============================================================ -->
     <script>
         // =============================================================
-        // 1. Supabase 配置（使用您提供的新配置）
+        // 1. Supabase 配置
         // =============================================================
         
         const SUPABASE_URL = 'https://bedgflxpiaiskeqkwnxo.supabase.co';
@@ -683,7 +772,6 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         console.log('🔑 Supabase已配置');
-        console.log('📡 URL:', SUPABASE_URL);
 
         // =============================================================
         // 3. 工具函数
@@ -941,7 +1029,10 @@
                 if (isPredicted) classes += ' predicted-day';
                 if (hasNote && hasNote.note) classes += ' has-note';
                 
-                html += `<div class="${classes}" data-date="${dateStr}">${day}</div>`;
+                // 日期数字用 span 包裹，便于显示在图片上层
+                html += `<div class="${classes}" data-date="${dateStr}">
+                    <span class="day-number">${day}</span>
+                </div>`;
             }
             
             $('calendarGrid').innerHTML = html;
@@ -1037,7 +1128,7 @@
             if (!isActive) {
                 const modal = $('modal');
                 const dateDisplay = displayDate(date);
-                $('modalMessage').textContent = `🌸 是否将 ${dateDisplay} 标记为经期开始日？`;
+                $('modalMessage').textContent = `🎀 是否将 ${dateDisplay} 标记为经期开始日？`;
                 modal.classList.add('show');
                 
                 $('modalConfirm').onclick = async () => {
