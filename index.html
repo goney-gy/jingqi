@@ -45,9 +45,11 @@
             padding: 40px 20px;
             margin-top: 20px;
             position: relative;
+            min-height: 480px;
+            border-radius: 24px;
+            overflow: hidden;
         }
 
-        /* Hello Kitty 背景图片 - 无圆形，整体大，边缘柔和 */
         .login-container .kitty-bg {
             position: absolute;
             top: 0;
@@ -58,11 +60,9 @@
             background-size: cover;
             background-position: center;
             border-radius: 24px;
-            opacity: 0.85;
             z-index: 0;
         }
 
-        /* 柔和遮罩，让文字更清晰 */
         .login-container .kitty-bg::after {
             content: '';
             position: absolute;
@@ -70,7 +70,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.25);
             border-radius: 24px;
         }
 
@@ -87,7 +87,7 @@
             margin-bottom: 8px;
             position: relative;
             z-index: 1;
-            text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
+            text-shadow: 0 2px 12px rgba(255, 255, 255, 0.9);
         }
 
         .login-container .subtitle {
@@ -96,7 +96,7 @@
             position: relative;
             z-index: 1;
             font-weight: 500;
-            text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
+            text-shadow: 0 2px 12px rgba(255, 255, 255, 0.9);
         }
 
         .form-group {
@@ -152,7 +152,7 @@
             position: relative;
             z-index: 1;
             font-weight: 500;
-            text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
+            text-shadow: 0 2px 12px rgba(255, 255, 255, 0.9);
         }
 
         .toggle-auth a {
@@ -280,7 +280,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
+            border-radius: 8px;
             font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
@@ -289,11 +289,12 @@
             background: transparent;
             color: #333;
             font-weight: 500;
-            border: 2px solid transparent;
+            border: none;
+            overflow: hidden;
         }
 
         .calendar-day:active {
-            transform: scale(0.9);
+            transform: scale(0.92);
         }
 
         .calendar-day.other-month {
@@ -301,42 +302,33 @@
         }
 
         .calendar-day.today {
-            border-color: #ff69b4;
+            border: 2px solid #ff69b4;
             font-weight: 700;
+            border-radius: 8px;
         }
 
         /* ============================================================ */
-        /* 经期标记 - 使用 hellokitty标记.jpeg 作为背景 */
+        /* 经期标记 - 完全使用图片，无圆圈，无边框 */
         /* ============================================================ */
         .calendar-day.period-day {
             background-image: url('hellokitty标记.jpeg');
             background-size: cover;
             background-position: center;
-            color: #6b1a3a;
-            font-weight: 700;
-            border: 2px solid #ff4d6d;
-            text-shadow: 0 1px 4px rgba(255, 255, 255, 0.8);
-            position: relative;
-        }
-
-        /* 日期数字在图片上层 */
-        .calendar-day.period-day .day-number {
-            position: relative;
-            z-index: 2;
-            background: rgba(255, 255, 255, 0.3);
-            padding: 2px 6px;
-            border-radius: 50%;
-            font-weight: 700;
+            background-repeat: no-repeat;
+            border: none;
+            border-radius: 8px;
             color: #4a1a2a;
+            font-weight: 700;
+            text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9);
         }
 
-        /* 经期标记 + 今日 */
+        /* 经期标记 + 今日 - 保留今日边框 */
         .calendar-day.period-day.today {
-            border-color: #d63384;
-            box-shadow: 0 0 0 2px #ff69b4, 0 0 0 4px #ff4d6d;
+            border: 2px solid #ff69b4;
+            border-radius: 8px;
         }
 
-        /* 经期标记 + 有备注 */
+        /* 经期标记 + 有备注 - 小点放在图片上层 */
         .calendar-day.period-day.has-note::after {
             content: '';
             position: absolute;
@@ -346,6 +338,7 @@
             border-radius: 50%;
             background: #ff69b4;
             z-index: 3;
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
         }
 
         /* ===== 预测日期 ===== */
@@ -353,11 +346,11 @@
             border: 2px solid #4CAF50;
             color: #2E7D32;
             font-weight: 600;
+            border-radius: 8px;
         }
 
         .calendar-day.predicted-day.period-day {
-            border-color: #4CAF50;
-            box-shadow: 0 0 0 2px #4CAF50, 0 0 0 4px rgba(255, 77, 109, 0.3);
+            border: 2px solid #4CAF50;
         }
 
         /* ===== 有备注标记 ===== */
@@ -365,10 +358,11 @@
             content: '';
             position: absolute;
             bottom: 4px;
-            width: 4px;
-            height: 4px;
+            width: 5px;
+            height: 5px;
             border-radius: 50%;
             background: #ff69b4;
+            z-index: 1;
         }
 
         /* ===== 备注区域 ===== */
@@ -607,10 +601,12 @@
             
             .calendar-day {
                 font-size: 12px;
+                border-radius: 6px;
             }
 
             .login-container {
                 padding: 30px 16px;
+                min-height: 400px;
             }
         }
     </style>
@@ -622,12 +618,10 @@
     <!-- ============================================================ -->
     <div id="loginPage" class="page active">
         <div class="login-container">
-            <!-- Hello Kitty 背景图片 -->
             <div class="kitty-bg"></div>
-            
             <div class="logo">🎀</div>
             <h1>咩咩咩突发恶疾</h1>
-            <p class="subtitle">关爱自己，咩咩咩</p>
+            <p class="subtitle">咩咩咩 啊咩咩咩</p>
             <form id="loginForm">
                 <div class="form-group">
                     <input type="text" id="loginUsername" placeholder="用户名" required>
@@ -649,7 +643,6 @@
     <div id="registerPage" class="page">
         <div class="login-container">
             <div class="kitty-bg"></div>
-            
             <div class="logo">🎀</div>
             <h1>创建账号</h1>
             <form id="registerForm">
@@ -678,11 +671,10 @@
     <!-- ============================================================ -->
     <div id="appPage" class="page">
         <div class="app-header">
-            <h2>咩咩咩突发恶疾</h2>
+            <h2>咩咩咩</h2>
             <button id="logoutBtn" class="btn-logout">退出</button>
         </div>
         
-        <!-- 统计概览 -->
         <div class="stats-container">
             <div class="stat-item">
                 <span class="stat-label">周期</span>
@@ -700,7 +692,6 @@
             </div>
         </div>
 
-        <!-- 日历 -->
         <div class="calendar-container">
             <div class="calendar-header">
                 <button id="prevMonth" class="nav-btn">‹</button>
@@ -714,7 +705,6 @@
             <div id="calendarGrid" class="calendar-grid"></div>
         </div>
 
-        <!-- 今日备注 -->
         <div class="note-container">
             <h3>📝 今日备注</h3>
             <div class="note-input-group">
@@ -728,7 +718,6 @@
             <div id="noteStatus" class="note-status"></div>
         </div>
 
-        <!-- 经期记录列表 -->
         <div class="history-container">
             <h3>📊 经期记录 <span style="font-size:12px;color:#999;font-weight:400;">（点击右侧🗑️删除）</span></h3>
             <div id="periodHistory"></div>
@@ -1029,10 +1018,7 @@
                 if (isPredicted) classes += ' predicted-day';
                 if (hasNote && hasNote.note) classes += ' has-note';
                 
-                // 日期数字用 span 包裹，便于显示在图片上层
-                html += `<div class="${classes}" data-date="${dateStr}">
-                    <span class="day-number">${day}</span>
-                </div>`;
+                html += `<div class="${classes}" data-date="${dateStr}">${day}</div>`;
             }
             
             $('calendarGrid').innerHTML = html;
