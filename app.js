@@ -339,31 +339,7 @@ async function markPeriod() {
         const dateDisplay = displayDate(date);
         if (confirm(`确定要取消 ${dateDisplay} 的经期标记吗？`)) {
             try {
-                console.log(`正在删除经期记录: ${date}`);
-                
-                await apiCall(`/delete_period/${date}`, 'DELETE', null, true);
-                
-                await loadData();
-                renderCalendar();
-                updateStats();
-                
-                markBtn.classList.remove('active');
-                markBtn.textContent = '💖 标记经期';
-                
-                const note = state.dailyNotes[date] || {};
-                if (note.has_period) {
-                    note.has_period = false;
-                    await apiCall('/daily_note', 'POST', {
-                        date: date,
-                        note: note.note || '',
-                        has_period: false,
-                        symptoms: note.symptoms || '',
-                        flow_level: note.flow_level || null
-                    }, true);
-                }
-                
-                $('noteStatus').textContent = '✅ 经期标记已取消！';
-                setTimeout(() => $('noteStatus').textContent = '', 2000);
+                await deletePeriodRecord(date);
             } catch (error) {
                 console.error('取消标记失败:', error);
                 alert('取消标记失败: ' + error.message);
@@ -394,7 +370,7 @@ function updateStats() {
     $('nextPeriod').textContent = nextStart.toLocaleDateString('zh-CN');
 }
 
-// ===== 渲染历史记录 =====
+// ===== 渲染历史记录（带删除按钮） =====
 function renderHistory() {
     const container = $('periodHistory');
     if (state.periods.length === 0) {
@@ -403,16 +379,84 @@ function renderHistory() {
     }
     
     let html = '';
-    state.periods.slice(0, 10).forEach(record => {
+    state.periods.slice(0, 20).forEach((record) => {
         const date = new Date(record.start_date).toLocaleDateString('zh-CN');
+        const startDate = record.start_date;
         html += `
-            <div class="period-item">
-                <span class="date">${date}</span>
-                <span class="info">周期 ${record.cycle_length}天 · 经期 ${record.period_length}天</span>
+            <div class="period-item" data-start-date="${startDate}">
+                <div class="period-info">
+                    <span class="date">${date}</span>
+                    <span class="info">周期 ${record.cycle_length}天 · 经期 ${record.period_length}天</span>
+                </div>
+                <button class="btn-delete-record" data-start-date="${startDate}">🗑️</button>
             </div>
         `;
     });
     container.innerHTML = html;
+    
+    // 为每个删除按钮绑定事件
+    document.querySelectorAll('.btn-delete-record').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const startDate = this.dataset.startDate;
+            const dateDisplay = new Date(startDate).toLocaleDateString('zh-CN');
+            
+            if (confirm(`确定要删除 ${dateDisplay} 的经期记录吗？`)) {
+                await deletePeriodRecord(startDate);
+            }
+        });
+    });
+}
+
+// ===== 删除经期记录 =====
+async function deletePeriodRecord(startDate) {
+    try {
+        console.log(`正在删除经期记录: ${startDate}`);
+        
+        // 调用后端删除API
+        await apiCall(`/delete_period/${startDate}`, 'DELETE', null, true);
+        
+        // 重新加载数据
+        await loadData();
+        
+        // 重新渲染日历
+        renderCalendar();
+        
+        // 更新统计信息
+        updateStats();
+        
+        // 重新渲染历史记录
+        renderHistory();
+        
+        // 如果当前选中的日期被删除了，更新备注区域状态
+        const currentDateStr = formatDateFromDate(state.selectedDate);
+        if (currentDateStr === startDate) {
+            const markBtn = $('markPeriod');
+            markBtn.classList.remove('active');
+            markBtn.textContent = '💖 标记经期';
+            
+            const note = state.dailyNotes[currentDateStr] || {};
+            if (note.has_period) {
+                note.has_period = false;
+                await apiCall('/daily_note', 'POST', {
+                    date: currentDateStr,
+                    note: note.note || '',
+                    has_period: false,
+                    symptoms: note.symptoms || '',
+                    flow_level: note.flow_level || null
+                }, true);
+                delete state.dailyNotes[currentDateStr];
+                $('dailyNote').value = '';
+            }
+        }
+        
+        $('noteStatus').textContent = '✅ 经期记录已删除！';
+        setTimeout(() => $('noteStatus').textContent = '', 2000);
+        
+    } catch (error) {
+        console.error('删除经期记录失败:', error);
+        alert('删除失败: ' + error.message);
+    }
 }
 
 // ===== 页面切换 =====
@@ -479,58 +523,4 @@ $('nextMonth').addEventListener('click', () => {
 });
 
 $('saveNote').addEventListener('click', saveDailyNote);
-$('markPeriod').addEventListener('click', markPeriod);
-
-$('deleteNote').addEventListener('click', async () => {
-    const date = formatDateFromDate(state.selectedDate);
-    const existingNote = state.dailyNotes[date];
-    if (!existingNote || !existingNote.note) {
-        alert('该日期没有备注需要删除');
-        return;
-    }
-    
-    if (confirm(`确定要删除 ${displayDate(date)} 的备注吗？`)) {
-        try {
-            await apiCall('/daily_note', 'POST', {
-                date: date,
-                note: '',
-                has_period: false,
-                symptoms: '',
-                flow_level: null
-            }, true);
-            
-            delete state.dailyNotes[date];
-            $('dailyNote').value = '';
-            renderCalendar();
-            $('noteStatus').textContent = '🗑️ 备注已删除！';
-            setTimeout(() => $('noteStatus').textContent = '', 2000);
-        } catch (error) {
-            alert('删除失败: ' + error.message);
-        }
-    }
-});
-
-// ===== 初始化 =====
-async function init() {
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-    
-    if (token && userId) {
-        state.token = token;
-        state.userId = userId;
-        try {
-            await loadData();
-            showPage('app');
-            renderCalendar();
-            return;
-        } catch (error) {
-            console.error('自动登录失败:', error);
-            localStorage.removeItem('token');
-            localStorage.removeItem('userId');
-        }
-    }
-    
-    showPage('login');
-}
-
-init();
+$('markPeriod
