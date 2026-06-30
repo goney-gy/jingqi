@@ -665,19 +665,20 @@
     <!-- ============================================================ -->
     <script>
         // =============================================================
-        // 1. Supabase 配置（直接硬编码）
+        // 1. Supabase 配置（使用您提供的新配置）
         // =============================================================
         
         const SUPABASE_URL = 'https://bedgflxpiaiskeqkwnxo.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlZGdmbHhwaWFpc2tlcWt3bnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MDExNjUsImV4cCI6MjA5ODM3NzE2NX0.ek39USIDE0F_9FDpeuL6l7h4NaVj8D1lbtUqiMe75yQ';
-
-        console.log('🔑 Supabase已配置');
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlZGdmbHhwaWFpc2tlcWt3bnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MDExNjUsImV4cCI6MjA5ODM3NzE2NX0.ek39USIDE0F_9FDpeuL6l7h4NaVj8D1lbtUqiMe75yQ';
 
         // =============================================================
         // 2. 初始化 Supabase 客户端
         // =============================================================
         
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        console.log('🔑 Supabase已配置');
+        console.log('📡 URL:', SUPABASE_URL);
 
         // =============================================================
         // 3. 工具函数
@@ -731,8 +732,7 @@
         
         async function login(username, password) {
             try {
-                // 查询用户
-                const { data: users, error } = await supabase
+                const { data: users, error } = await supabaseClient
                     .from('user_data')
                     .select('*')
                     .eq('username', username);
@@ -745,7 +745,6 @@
 
                 const user = users[0];
                 
-                // 简单密码验证（生产环境应使用bcrypt）
                 if (user.password_hash !== password) {
                     alert('用户名或密码错误');
                     return false;
@@ -766,8 +765,7 @@
 
         async function register(username, password, email) {
             try {
-                // 检查用户名是否存在
-                const { data: existing, error: checkError } = await supabase
+                const { data: existing, error: checkError } = await supabaseClient
                     .from('user_data')
                     .select('id')
                     .eq('username', username);
@@ -778,8 +776,7 @@
                     return false;
                 }
 
-                // 创建用户
-                const { data: newUser, error: insertError } = await supabase
+                const { data: newUser, error: insertError } = await supabaseClient
                     .from('user_data')
                     .insert({
                         username: username,
@@ -820,8 +817,7 @@
             if (!state.userId) return;
 
             try {
-                // 获取用户数据
-                const { data: userData, error } = await supabase
+                const { data: userData, error } = await supabaseClient
                     .from('user_data')
                     .select('*')
                     .eq('id', state.userId)
@@ -851,7 +847,7 @@
             if (!state.userId) return;
 
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('user_data')
                     .update({
                         menstrual_history: state.periods,
@@ -896,7 +892,6 @@
                 }
             });
             
-            // 计算预测日期
             let predictedDates = new Set();
             if (state.periods.length > 0) {
                 const last = state.periods[0];
@@ -1043,7 +1038,6 @@
                 $('modalConfirm').onclick = async () => {
                     modal.classList.remove('show');
                     try {
-                        // 检查是否已有该日期的记录
                         const existingIdx = state.periods.findIndex(r => r.start_date === date);
                         
                         const record = {
@@ -1059,7 +1053,6 @@
                             state.periods.unshift(record);
                         }
                         
-                        // 同时更新备注
                         if (!state.dailyNotes[date]) {
                             state.dailyNotes[date] = {};
                         }
@@ -1083,10 +1076,8 @@
                 const dateDisplay = displayDate(date);
                 if (confirm(`确定要取消 ${dateDisplay} 的经期标记吗？`)) {
                     try {
-                        // 从经期记录中删除
                         state.periods = state.periods.filter(r => r.start_date !== date);
                         
-                        // 更新备注
                         if (state.dailyNotes[date]) {
                             state.dailyNotes[date].has_period = false;
                         }
