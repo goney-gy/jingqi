@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎀 经期追踪</title>
+    <title>经期追踪</title>
     <style>
         /* ===== 全局样式 ===== */
         * {
@@ -678,7 +678,7 @@
     <!-- ============================================================ -->
     <div id="appPage" class="page">
         <div class="app-header">
-            <h2>🎀 经期追踪</h2>
+            <h2>经期追踪</h2>
             <button id="logoutBtn" class="btn-logout">退出</button>
         </div>
         
@@ -1128,7 +1128,7 @@
             if (!isActive) {
                 const modal = $('modal');
                 const dateDisplay = displayDate(date);
-                $('modalMessage').textContent = `🎀 是否将 ${dateDisplay} 标记为经期开始日？`;
+                $('modalMessage').textContent = `是否将 ${dateDisplay} 标记为经期开始日？`;
                 modal.classList.add('show');
                 
                 $('modalConfirm').onclick = async () => {
