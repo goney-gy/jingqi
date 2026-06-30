@@ -523,4 +523,58 @@ $('nextMonth').addEventListener('click', () => {
 });
 
 $('saveNote').addEventListener('click', saveDailyNote);
-$('markPeriod
+$('markPeriod').addEventListener('click', markPeriod);
+
+$('deleteNote').addEventListener('click', async () => {
+    const date = formatDateFromDate(state.selectedDate);
+    const existingNote = state.dailyNotes[date];
+    if (!existingNote || !existingNote.note) {
+        alert('该日期没有备注需要删除');
+        return;
+    }
+    
+    if (confirm(`确定要删除 ${displayDate(date)} 的备注吗？`)) {
+        try {
+            await apiCall('/daily_note', 'POST', {
+                date: date,
+                note: '',
+                has_period: false,
+                symptoms: '',
+                flow_level: null
+            }, true);
+            
+            delete state.dailyNotes[date];
+            $('dailyNote').value = '';
+            renderCalendar();
+            $('noteStatus').textContent = '🗑️ 备注已删除！';
+            setTimeout(() => $('noteStatus').textContent = '', 2000);
+        } catch (error) {
+            alert('删除失败: ' + error.message);
+        }
+    }
+});
+
+// ===== 初始化 =====
+async function init() {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    
+    if (token && userId) {
+        state.token = token;
+        state.userId = userId;
+        try {
+            await loadData();
+            showPage('app');
+            renderCalendar();
+            return;
+        } catch (error) {
+            console.error('自动登录失败:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
+        }
+    }
+    
+    showPage('login');
+}
+
+init();
