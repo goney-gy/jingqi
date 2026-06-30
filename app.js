@@ -1,5 +1,6 @@
 // ===== API配置 =====
-const API_URL = 'http://10.10.21.141:8000/api';
+// 使用 Serveo 公网地址
+const API_URL = 'https://4f229c6a501b6aea-140-206-156-178.serveousercontent.com/api';
 
 console.log('📡 API地址:', API_URL);
 
@@ -394,7 +395,6 @@ function renderHistory() {
     });
     container.innerHTML = html;
     
-    // 为每个删除按钮绑定事件
     document.querySelectorAll('.btn-delete-record').forEach(btn => {
         btn.addEventListener('click', async function(e) {
             e.stopPropagation();
@@ -413,22 +413,13 @@ async function deletePeriodRecord(startDate) {
     try {
         console.log(`正在删除经期记录: ${startDate}`);
         
-        // 调用后端删除API
         await apiCall(`/delete_period/${startDate}`, 'DELETE', null, true);
         
-        // 重新加载数据
         await loadData();
-        
-        // 重新渲染日历
         renderCalendar();
-        
-        // 更新统计信息
         updateStats();
-        
-        // 重新渲染历史记录
         renderHistory();
         
-        // 如果当前选中的日期被删除了，更新备注区域状态
         const currentDateStr = formatDateFromDate(state.selectedDate);
         if (currentDateStr === startDate) {
             const markBtn = $('markPeriod');
